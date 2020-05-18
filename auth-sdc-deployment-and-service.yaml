@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: auth-sdc
+    namespace: ns1
+    labels:
+      app : auth-sdc
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: auth-sdc
+    template:
+      metadata:
+        labels:
+          app: auth-sdc
+      spec:
+        containers:
+        - name : auth-sdc
+          image: streamsets/datacollector:latest
+          ports:
+          - containerPort: 18630
+          env:
+          - name: SDC_CONF_SDC_BASE_HTTP_URL
+            value: https://<your istio gateway host or IP>:18636
+          - name: SDC_CONF_HTTP_ENABLE_FORWARDED_REQUESTS
+            value: "true" 
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: auth-sdc
+    namespace: ns1
+    labels:
+      app: auth-sdc
+  spec:
+    ports:
+    - name: http
+      port: 18636
+      targetPort: 18630
+      protocol: TCP
+    selector:
+      app: auth-sdc
