@@ -25,17 +25,19 @@ items:
           - containerPort: 18630
           env:
           - name: SDC_CONF_SDC_BASE_HTTP_URL
-            value: https://<your istio gateway host or IP>:18636
+            value: https://<ISTIO INGRESS HOST>:18636
           - name: SDC_CONF_HTTP_ENABLE_FORWARDED_REQUESTS
             value: "true" 
 - apiVersion: v1
   kind: Service
   metadata:
-    name: auth-sdc
+    name: auth-sdc-service
     namespace: ns1
     labels:
-      app: auth-sdc
+      app: auth-sdc-service
+      service: auth-sdc-service
   spec:
+    type: NodePort
     ports:
     - name: http
       port: 18636

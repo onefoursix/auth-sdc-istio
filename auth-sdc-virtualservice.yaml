@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: auth-sdc-virtualservice
+spec:
+  hosts:
+  - '*'
+  gateways:
+  - istio-system/auth-sdc-gateway
+  http:
+  - route:
+    - destination:
+        host: auth-sdc-service
