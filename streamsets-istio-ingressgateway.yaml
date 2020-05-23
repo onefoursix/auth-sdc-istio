@@ -1,16 +1,44 @@
+---
+
+# Resources for StreamSets Istio IngressGateways component
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: streamsets-ingressgateway
+    istio: ingressgateway
+    release: istio
+  name: streamsets-ingressgateway
+  namespace: streamsets
+spec:
+  maxReplicas: 5
+  metrics:
+  - resource:
+      name: cpu
+      targetAverageUtilization: 80
+    type: Resource
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: streamsets-ingressgateway
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: istio-ingressgateway
+    app: streamsets-ingressgateway
     istio: ingressgateway
     release: istio
-  name: istio-ingressgateway
-  namespace: istio-system
+  name: streamsets-ingressgateway
+  namespace: streamsets
 spec:
   selector:
     matchLabels:
-      app: istio-ingressgateway
+      app: streamsets-ingressgateway
       istio: ingressgateway
   strategy:
     rollingUpdate:
@@ -21,12 +49,12 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
       labels:
-        app: istio-ingressgateway
+        app: streamsets-ingressgateway
         chart: gateways
         heritage: Tiller
         istio: ingressgateway
         release: istio
-        service.istio.io/canonical-name: istio-ingressgateway
+        service.istio.io/canonical-name: streamsets-ingressgateway
         service.istio.io/canonical-revision: latest
     spec:
       affinity:
@@ -132,14 +160,7 @@ spec:
         name: istio-proxy
         ports:
         - containerPort: 15021
-        - containerPort: 8080
-        - containerPort: 8443
-        - containerPort: 15443
-        - containerPort: 15011
-        - containerPort: 15012
-        - containerPort: 8060
-        - containerPort: 853
-        - containerPort: 15090
+        - containerPort: 18630
         - containerPort: 18631
           name: http-envoy-prom
           protocol: TCP
@@ -180,7 +201,7 @@ spec:
         - mountPath: /etc/istio/ingressgateway-ca-certs
           name: ingressgateway-ca-certs
           readOnly: true
-      serviceAccountName: istio-ingressgateway-service-account
+      serviceAccountname: streamsets-ingressgateway-service-account
       volumes:
       - configMap:
           name: istio-ca-root-cert
@@ -212,40 +233,96 @@ spec:
       - name: ingressgateway-certs
         secret:
           optional: true
-          secretName: istio-ingressgateway-certs
+          secretname: streamsets-ingressgateway-certs
       - name: ingressgateway-ca-certs
         secret:
           optional: true
-          secretName: istio-ingressgateway-ca-certs
+          secretname: streamsets-ingressgateway-ca-certs
+
 ---
+
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: streamsets-ingressgateway
+  namespace: streamsets
+  labels:
+    app: streamsets-ingressgateway
+    istio: ingressgateway
+    release: istio
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: streamsets-ingressgateway
+      istio: ingressgateway
+      release: istio
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: streamsets-ingressgateway-sds
+  namespace: streamsets
+  labels:
+    release: istio
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list"]
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: streamsets-ingressgateway-sds
+  namespace: streamsets
+  labels:
+    release: istio
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: streamsets-ingressgateway-sds
+subjects:
+- kind: ServiceAccount
+  name: streamsets-ingressgateway-service-account
+---
+
 apiVersion: v1
 kind: Service
 metadata:
   annotations: null
   labels:
-    app: istio-ingressgateway
+    app: streamsets-ingressgateway
     istio: ingressgateway
     release: istio
-  name: istio-ingressgateway
-  namespace: istio-system
+  name: streamsets-ingressgateway
+  namespace: streamsets
 spec:
   ports:
   - name: status-port
     port: 15021
     targetPort: 15021
-  - name: http2
-    port: 80
-    targetPort: 8080
-  - name: https
-    port: 443
-    targetPort: 8443
-  - name: tls
-    port: 15443
-    targetPort: 15443
-  - name: sch
+  - name: sdc-port
+    port: 18630
+    targetPort: 18630
+  - name: sch-port
     port: 18631
     targetPort: 18631
   selector:
-    app: istio-ingressgateway
+    app: streamsets-ingressgateway
     istio: ingressgateway
   type: LoadBalancer
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: streamsets-ingressgateway-service-account
+  namespace: streamsets
+  labels:
+    app: streamsets-ingressgateway
+    istio: ingressgateway
+    release: istio
+---
