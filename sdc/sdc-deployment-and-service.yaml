@@ -31,11 +31,11 @@ items:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: auth-sdc-service
+    name: sdc-service
     namespace: ns1
     labels:
-      app: auth-sdc-service
-      service: auth-sdc-service
+      app: sdc-service
+      service: sdc-service
   spec:
     type: NodePort
     ports:
@@ -44,4 +44,4 @@ items:
       targetPort: 18630
       protocol: TCP
     selector:
-      app: auth-sdc
+      app: sdc-service
