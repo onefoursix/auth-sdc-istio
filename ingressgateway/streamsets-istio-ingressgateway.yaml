@@ -31,6 +31,8 @@ metadata:
   labels:
     app: streamsets-ingressgateway
     istio: ingressgateway
+    operator.istio.io/component: IngressGateways
+    operator.istio.io/version: 1.6.0
     release: istio
   name: streamsets-ingressgateway
 spec:
@@ -291,6 +293,8 @@ metadata:
     app: streamsets-ingressgateway
     istio: ingressgateway
     release: istio
+    operator.istio.io/component: IngressGateways
+    operator.istio.io/version: 1.6.0
   name: streamsets-ingressgateway
 spec:
   ports:
