@@ -233,11 +233,11 @@ spec:
       - name: ingressgateway-certs
         secret:
           optional: true
-          secretName: streamsets-ingressgateway-certs
+          secretName: ingressgateway-certs
       - name: ingressgateway-ca-certs
         secret:
           optional: true
-          secretName: streamsets-ingressgateway-ca-certs
+          secretName: ingressgateway-ca-certs
 
 ---
 
