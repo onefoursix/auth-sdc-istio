@@ -10,4 +10,4 @@ spec:
   http:
   - route:
     - destination:
-        host: auth-sdc-service
+        host: sdc-service
