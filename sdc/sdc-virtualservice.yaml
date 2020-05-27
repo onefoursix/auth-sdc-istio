@@ -6,8 +6,8 @@ spec:
   hosts:
   - '*'
   gateways:
-  - streamsets/sdc-gateway
+  - istio-system/sdc-gateway
   http:
   - route:
     - destination:
-        host: sdc-service
+        host: auth-sdc-service

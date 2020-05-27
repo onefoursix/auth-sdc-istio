@@ -44,4 +44,4 @@ items:
       targetPort: 18630
       protocol: TCP
     selector:
-      app: sdc-service
+      app: auth-sdc
