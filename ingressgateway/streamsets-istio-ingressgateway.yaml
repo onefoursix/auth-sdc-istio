@@ -1,30 +1,31 @@
 ---
-
-# Resources for StreamSets Istio IngressGateways component
-
-apiVersion: autoscaling/v2beta1
-kind: HorizontalPodAutoscaler
+apiVersion: v1
+kind: Service
 metadata:
+  annotations: null
   labels:
     app: streamsets-ingressgateway
     istio: ingressgateway
     release: istio
+    operator.istio.io/component: IngressGateways
+    operator.istio.io/version: 1.6.0
   name: streamsets-ingressgateway
 spec:
-  maxReplicas: 5
-  metrics:
-  - resource:
-      name: cpu
-      targetAverageUtilization: 80
-    type: Resource
-  minReplicas: 1
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: streamsets-ingressgateway
-
+  ports:
+  - name: status-port
+    port: 15021
+    targetPort: 15021
+  - name: sdc-port
+    port: 18630
+    targetPort: 18630
+  - name: sch-port
+    port: 18631
+    targetPort: 18631
+  selector:
+    app: streamsets-ingressgateway
+    istio: ingressgateway
+  type: LoadBalancer
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -238,26 +239,7 @@ spec:
         secret:
           optional: true
           secretName: ingressgateway-ca-certs
-
 ---
-
-apiVersion: policy/v1beta1
-kind: PodDisruptionBudget
-metadata:
-  name: streamsets-ingressgateway
-  labels:
-    app: streamsets-ingressgateway
-    istio: ingressgateway
-    release: istio
-spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      app: streamsets-ingressgateway
-      istio: ingressgateway
-      release: istio
----
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -269,7 +251,6 @@ rules:
   resources: ["secrets"]
   verbs: ["get", "watch", "list"]
 ---
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -283,37 +264,8 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: streamsets-ingressgateway-service-account
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  annotations: null
-  labels:
-    app: streamsets-ingressgateway
-    istio: ingressgateway
-    release: istio
-    operator.istio.io/component: IngressGateways
-    operator.istio.io/version: 1.6.0
-  name: streamsets-ingressgateway
-spec:
-  ports:
-  - name: status-port
-    port: 15021
-    targetPort: 15021
-  - name: sdc-port
-    port: 18630
-    targetPort: 18630
-  - name: sch-port
-    port: 18631
-    targetPort: 18631
-  selector:
-    app: streamsets-ingressgateway
-    istio: ingressgateway
-  type: LoadBalancer
 
 ---
-
 apiVersion: v1
 kind: ServiceAccount
 metadata:
